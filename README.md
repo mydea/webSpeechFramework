@@ -52,6 +52,13 @@ Add new commands after initialisation: ```speech.addCommands(commandList)```
 
 Customisation
 ==================
+<pre>
+var lang = en_UK; // or any similar language-code like de_DE
+var variance = 5; // integer from 0 to 10 - in doubt, set to 5
+var commands = {}; // Object with the commands and the functions to call
+
+var speech = new WebSpeechFramework(lang, variance, commands);
+</pre>
 At the moment, there are only the most basic options to customise the webSpeechFramework. 
 When initialising a new WebSpeechFramework-object, you have to set the **language** that should be used and the **variance**. 
 The variance should be an integer between 0 and 10. 
@@ -63,18 +70,15 @@ If you set a very high variance like 10, it would fire on similar terms like Hou
 This is realised with the so-called Levenshtein function. This function returns the difference between two strings as a number. 
 In addition, the length of the term is taken into account: For longer terms, a bigger difference will be accepted.
 
-<pre>
-var lang = en_UK; // or any similar language-code like de_DE
-var variance = 5; // integer from 0 to 10 - in doubt, set to 5
-var commands = {}; // Object with the commands and the functions to call
-
-var speech = new WebSpeechFramework(lang, variance, commands);
-</pre>
-
 Keep in mind
 ==================
 A basic parsing of "human-written" phrases will be done. For example, speech recognition will (in the current implementation by Google) never return numbers or punctuation marks.
-Therefore, do not use them in your commands. Punctuation marks will be stripped out, and numbers will simply not work!
+Therefore, do not use them in your commands. Punctuation marks will be stripped out, and numbers will simply not work! Also, try not to use long sentences.
+<pre>
+"How are you?" => "how are you"
+"I don't know, what do you think?" => "what do you think"
+"Start now!" => "start now"
+</pre>
 
 Demo
 ==================
