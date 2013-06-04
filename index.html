@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>WebSpeechFramework</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<script src="webSpeechFramework.js"></script>
+  </head>
+  <body>
+		<h1>WebSpeechFramework</h1>
+		
+		<button onclick="speech.start();">Start Speech Recognition</button>
+		<p>
+			Try the following commands:
+		</p>
+		<ul>
+			<li>stop</li>
+			<li>play now</li>
+			<li>welcome</li>
+			<li>skip this one</li>
+		</ul>
+		
+		<script>
+			var testCommands = [
+				{
+					'command':'stop',
+					'call': 'test1'
+				},
+				{
+					'command':'play now',
+					'call': 'test2'
+				},
+				{
+					'command':'welcome',
+					'call': 'test3'
+				},
+				{
+					'command':'skip this one',
+					'call': 'test4'
+				}
+			];
+			
+			var speech = new WebSpeechFramework("en_UK", 5, testCommands);
+			
+			function test1() {
+				alert("Command recognized: stop");
+			}
+
+			function test2() {
+				alert("Command recognized: play now");
+			}
+
+			function test3() {
+				alert("Command recognized: welcome");
+			}
+
+			function test4() {
+				alert("Command recognized: skip this one");
+			}
+		</script>
+  </body>
+</html>
