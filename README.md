@@ -7,9 +7,9 @@ What it does
 ==================
 I have developed the webSpeechFramework because I have explored the new and cutting edge Web Speech API for my bachelor thesis.
 
-For more information on the Web Speech API, please visit: http://updates.html5rocks.com/2013/01/Voice-Driven-Web-Apps-Introduction-to-the-Web-Speech-API
+This framework gives developers an easy way to add commands that should be parsed by the speech recognition. This means, that you can tie functions to voice commands.
 
-This framework gives developers an easy way to add commands that should be parsed by the speech recognition.
+For more information on the Web Speech API, please visit: http://updates.html5rocks.com/2013/01/Voice-Driven-Web-Apps-Introduction-to-the-Web-Speech-API
 
 Usage
 ==================
@@ -40,6 +40,24 @@ function test3() {...}
 function test4() {...}```
 * Initialise the webSpeechFramework: ```var speech = new WebSpeechFramework("en_UK", 5, testCommands);```
 * Start the speech recognition: ```speech.start()```
+
+Customisation
+==================
+At the moment, there are only the most basic options to customise the webSpeechFramework. 
+When initialising a new WebSpeechFramework-object, you have to set the language that should be used and the variance. 
+The variance should be an integer between 0 and 10. 
+The lower this value is, the stricter it will be when checking for results. 
+For example, with a variance of 0, it will only take 100% correct results: If the command you set way "House", it would not fire on "Houses". 
+If you set a medium variance of around 5 (which is recommended) it would fire on Houses. 
+If you set a very high variance like 10, it would fire on similar terms like Houston.
+
+This is realised with the so-called Levenshtein function. This function returns the difference between two strings as a number. 
+In addition, the length of the term is taken into account: For longer terms, a bigger difference will be accepted.
+
+Keep in mind
+==================
+A basic parsing of "human-written" phrases will be done. For example, speech recognition will (in the current implementation by Google) never return numbers or punctuation marks.
+Therefore, do not use them in your commands. Punctuation marks will be stripped out, and numbers will simply not work!
 
 Demo
 ==================
