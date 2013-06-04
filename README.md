@@ -13,43 +13,47 @@ For more information on the Web Speech API, please visit: http://updates.html5ro
 
 Usage
 ==================
-* Download the file webSpeechFramework.js and included it in your document.
-* Create a list of commands that should be parsed:
-```var testCommands = [
-				{
-					'command':'stop',
-					'call': 'test1'
-				},
-				{
-					'command':'play now',
-					'call': 'test2'
-				},
-				{
-					'command':'welcome',
-					'call': 'test3'
-				},
-				{
-					'command':'skip this one',
-					'call': 'test4'
-				}
-			];```
-* Create functions for the commands. For the example above, you would have to create the following functions:
-```
-function test1() {...}
+Download the file webSpeechFramework.js and included it in your document.
 
-function test2() {...}
+Create a list of commands that should be parsed:<pre>var testCommands = [
+	{
+		'command':'stop',
+		'call': 'test1'
+	},
+	{
+		'command':'play now',
+		'call': 'test2'
+	},
+	{
+		'command':'welcome',
+		'call': 'test3'
+	},
+	{
+		'command':'skip this one',
+		'call': 'test4'
+	}
+];</pre>
 
-function test3() {...}
+Create functions for the commands. For the example above, you would have to create the following functions:
+<pre>
+    function test1() {...}
+    function test2() {...}
+    function test3() {...}
+    function test4() {...}
+</pre>
 
-function test4() {...}
-```
-* Initialise the webSpeechFramework: ```var speech = new WebSpeechFramework("en_UK", 5, testCommands);```
-* Start the speech recognition: ```speech.start()```
+Initialise the webSpeechFramework:  ```var speech = new WebSpeechFramework("en_UK", 5, testCommands);```
+
+Start speech recognition: ```speech.start()```
+
+Stop speech recognition: ```speech.stop()```
+
+Add new commands after initialisation: ```speech.addCommands(commandList)```
 
 Customisation
 ==================
 At the moment, there are only the most basic options to customise the webSpeechFramework. 
-When initialising a new WebSpeechFramework-object, you have to set the language that should be used and the variance. 
+When initialising a new WebSpeechFramework-object, you have to set the **language** that should be used and the **variance**. 
 The variance should be an integer between 0 and 10. 
 The lower this value is, the stricter it will be when checking for results. 
 For example, with a variance of 0, it will only take 100% correct results: If the command you set way "House", it would not fire on "Houses". 
@@ -58,6 +62,14 @@ If you set a very high variance like 10, it would fire on similar terms like Hou
 
 This is realised with the so-called Levenshtein function. This function returns the difference between two strings as a number. 
 In addition, the length of the term is taken into account: For longer terms, a bigger difference will be accepted.
+
+<pre>
+var lang = en_UK; // or any similar language-code like de_DE
+var variance = 5; // integer from 0 to 10 - in doubt, set to 5
+var commands = {}; // Object with the commands and the functions to call
+
+var speech = new WebSpeechFramework(lang, variance, commands);
+</pre>
 
 Keep in mind
 ==================
