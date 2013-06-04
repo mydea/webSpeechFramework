@@ -34,10 +34,12 @@ Usage
 				}
 			];```
 * Create functions for the commands. For the example above, you would have to create the following functions:
-```function test1() {...}
+```
+function test1() {...}
 function test2() {...}
 function test3() {...}
-function test4() {...}```
+function test4() {...}
+```
 * Initialise the webSpeechFramework: ```var speech = new WebSpeechFramework("en_UK", 5, testCommands);```
 * Start the speech recognition: ```speech.start()```
 
