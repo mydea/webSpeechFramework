@@ -1,21 +1,31 @@
 /* Constructor */
-function WebSpeechFramework(lang, variance, commandList) {
+function WebSpeechFramework(config, commandList) {
 	this.commands = [];
+	this.config = {};
+	
 	// Defaults
-	if(typeof lang === "undefined" || lang === null) lang = "en_UK";
-	if(typeof variance === "undefined" || variance === null) variance = 5;
+	if(typeof config.lang === "undefined" || config.lang === null) config.lang = "en_UK";
+	if(typeof config.variance === "undefined" || config.variance === null || !is_int(config.variance)) config.variance = 5;
+	if(typeof config.displayConsoleLog === "undefined" || config.displayConsoleLog === null || config.displayConsoleLog !== true) config.displayConsoleLog = false;
+	if(typeof config.displayErrorMessages === "undefined" || config.displayErrorMessages === null || config.displayErrorMessages !== false) config.displayErrorMessages = true;
+	if(typeof config.displayNoSupportMessage === "undefined" || config.displayNoSupportMessage === null || config.displayNoSupportMessage !== false) config.displayNoSupportMessage = true;
+	if(typeof config.displayAllowMessage === "undefined" || config.displayAllowMessage === null || config.displayAllowMessage !== false) config.displayAllowMessage = true;
+	if(typeof config.addDefaultErrorStyling === "undefined" || config.addDefaultErrorStyling === null || config.addDefaultErrorStyling !== false) config.addDefaultErrorStyling = true;
 	if(typeof commandList === "object") {
 		this.addCommands(commandList);
 	}
 	
-	this.lang = lang;
-	this.variance = variance;
+	this.config = config;
+
 	this.isRecording = false;
 	this.errorMsgList = {
 		'no-speech': 'Speech Recognition Error: No speech has been detected.',
-		'audio-capture': 'Speech Recognition Error: No microphone was found.',
+		'audio-capture': 'Speech Recognition Error: Audio capture has failed. Maybe no microphone has been found?',
 		'not-allowed': 'Speech Recognition Error: You need to have a connected microphone and grant the browser permission to use it.',
-		'no-support': 'Speech Recognition Error: It seems like your browser has no support for Speech Recognition.'
+		'no-support': 'Speech Recognition Error: It seems like your browser has no support for Speech Recognition.',
+		'network': 'Speech Recognition Error: There seems to be a problem with the network communication.',
+		'aborted': 'Speech Recognition Error: It seems like speech input was aborted!',
+		'language-not-supported': 'Speech Recognition Error: The specified language is not supported!'
 	};
 
 }
@@ -49,7 +59,7 @@ WebSpeechFramework.prototype.callFunction = function(word) {
 		if(commandList[key].command === word)
 			commandKey = key;
 	}
-	if(commandKey != null) {
+	if(commandKey !== null) {
 		this.commands[commandKey]["call"]();
 		return true;
 	} else
@@ -61,7 +71,7 @@ WebSpeechFramework.prototype.callFunction = function(word) {
  */
 WebSpeechFramework.prototype.checkInput = function(word) { 
 	var commandList = this.commands;
-	var variance = getVarianceValue(word, this.variance);
+	var variance = getVarianceValue(word, this.config.variance);
 	
 	var commandKey = null;
 	var bestDiff = 999999;
@@ -85,7 +95,7 @@ WebSpeechFramework.prototype.checkInput = function(word) {
  * Start speech recognition
  */
 WebSpeechFramework.prototype.start = function() { 
-	console.log("Speech Recognition initialised");
+	if(this.config.displayConsoleLog) console.log("Speech Recognition initialised");
 	var SpeechRecognition = window.SpeechRecognition || 
 													window.webkitSpeechRecognition || 
 													window.mozSpeechRecognition || 
@@ -94,45 +104,72 @@ WebSpeechFramework.prototype.start = function() {
 	
 	// If Speech Recognition is not supported by the browser
 	if(!SpeechRecognition) {
-		this.displayMessage("Speech Recognition Error: It seems like your browser has no support for Speech Recognition.");
+		if(this.config.displayNoSupportMessage) this.displayMessage("Speech Recognition Error: It seems like your browser has no support for Speech Recognition.");
 		return false;
 	}
 	
 	var rec = new SpeechRecognition;
 	rec.parent = this;
+	rec.lang = this.config.lang;
 	rec.continuous = true; // We want to keep recording
 	rec.interimResults = true; // We want to get all results
 	
 	// Display information regarding permission
-	this.displayMessage("Please allow microphone access!");
+	if(this.config.displayAllowMessage)  this.displayMessage("Please allow microphone access!");
 	
 	// After the user has given his permission
 	rec.onstart = function() {
-		this.isRecording = true;
+		// Call specified function
+		if(typeof this.parent.config.onstart !== "undefined" || this.parent.config.onstart !== null) {
+			if(window[this.parent.config.onstart]) {
+				this.parent.config[onstart](event);
+			}
+		}
+		this.parent.isRecording = true;
+		this.parent.hideMessage();
 	};
 	rec.onresult = function(event) {
-		console.log("Result received:");
+		// Call specified function
+		if(typeof this.parent.config.onresult !== "undefined" || this.parent.config.onresult !== null) {
+			if(window[this.parent.config.onresult]) {
+				this.parent.config[onresult](event);
+			}
+		}
 		var transcript = "";
 		for(var i=event.resultIndex; i<event.results.length; i++) {
 			transcript += event.results[i][0].transcript;
 		}
 		transcript = transcript.trim().toLowerCase();
+		if(this.parent.config.displayConsoleLog) console.log("Result received: '" + transcript + "'");
 		var cmd = this.parent.checkInput(transcript);
 		if(cmd) { 
 			this.parent.callFunction(cmd.command);
 		}
 	};
 	rec.onerror = function(event) {
+		// Call specified function
+		if(typeof this.parent.config.onerror !== "undefined" || this.parent.config.onerror !== null) {
+			if(window[this.parent.config.onerror]) {
+				this.parent.config[onerror](event);
+			}
+		}
 		var error = event.error;
 		var errorMsg = "Sorry, a problem with the speech recognition has occured. Error-Code: "+error;
 		
 		var errorMsgList = this.parent.errorMsgList;
 		if(errorMsgList[error]) errorMsg = errorMsgList[error];
-		console.error(errorMsg);
-	this.	parent.displayMessage(errorMsg);
+		
+		if(this.parent.config.displayConsoleLog) console.error(errorMsg);
+		if(this.parent.config.displayErrorMessages) this.	parent.displayMessage(errorMsg);
 	};
 	rec.onend = function() {
-		console.log("Speech Recognition stopped")
+		// Call specified function
+		if(typeof this.parent.config.onend !== "undefined" || this.parent.config.onend !== null) {
+			if(window[this.parent.config.onend]) {
+				this.parent.config[onend](event);
+			}
+		}
+		if(this.parent.config.displayConsoleLog) console.log("Speech Recognition stopped")
 		this.isRecording = false;
 	};
 	
@@ -150,7 +187,7 @@ WebSpeechFramework.prototype.stop = function() {
 };
 
 /*
- * If no support is detected
+ * Display a message
  */
 WebSpeechFramework.prototype.displayMessage = function(message) { 
 	var div;
@@ -173,10 +210,20 @@ WebSpeechFramework.prototype.displayMessage = function(message) {
 		
 		div.appendChild(innerDiv);
 		div.appendChild(closebtn);
-		div.setAttribute("style", "position: absolute; border: 2px dotted red; background: rgb(255,230,230); padding: 10px; left: 0; top: 0; right: 0; text-align: center; font-size: 25px; z-index: 9999; cursor: pointer;");
+		if(this.config.addDefaultErrorStyling) div.setAttribute("style", "position: fixed; border: 2px dotted red; background: rgba(255,230,230,0.90); padding: 10px; left: 0; top: 0; right: 0; text-align: center; font-size: 25px; z-index: 9999; cursor: pointer;");
 		div.setAttribute("onclick", "this.parentNode.removeChild(this);");
+		if(this.config.addDefaultErrorStyling) div.setAttribute("onmouseover", "this.style.background = 'rgb(255,180,180)'");
+		if(this.config.addDefaultErrorStyling) div.setAttribute("onmouseout", "this.style.background = 'rgba(255,230,230,0.90)'");
 		
 		document.body.appendChild(div);
+	}
+}
+/*
+ * Hide a message (if one is displayed)
+ */
+WebSpeechFramework.prototype.hideMessage = function() { 
+	if(div = document.getElementById("webspeech_message_container")) {
+		div.parentNode.removeChild(div);
 	}
 }
 
@@ -297,3 +344,25 @@ var th = ['','thousand','million', 'billion','trillion'];
 // var th = ['','thousand','million', 'milliard','billion'];
 
 var dg = ['zero','one','two','three','four', 'five','six','seven','eight','nine']; var tn = ['ten','eleven','twelve','thirteen', 'fourteen','fifteen','sixteen', 'seventeen','eighteen','nineteen']; var tw = ['twenty','thirty','forty','fifty', 'sixty','seventy','eighty','ninety']; function numbersToWords(s){s = s.toString(); s = s.replace(/[\, ]/g,''); if (s != parseFloat(s)) return 'not a number'; var x = s.indexOf('.'); if (x == -1) x = s.length; if (x > 15) return 'too big'; var n = s.split(''); var str = ''; var sk = 0; for (var i=0; i < x; i++) {if ((x-i)%3==2) {if (n[i] == '1') {str += tn[Number(n[i+1])] + ' '; i++; sk=1;} else if (n[i]!=0) {str += tw[n[i]-2] + ' ';sk=1;}} else if (n[i]!=0) {str += dg[n[i]] +' '; if ((x-i)%3==0) str += 'hundred ';sk=1;} if ((x-i)%3==1) {if (sk) str += th[(x-i-1)/3] + ' ';sk=0;}} if (x != s.length) {var y = s.length; str += 'point '; for (var i=x+1; i<y; i++) str += dg[n[i]] +' ';} return str.replace(/\s+/g,' ');}
+
+function is_int (mixed_var) {
+  // http://kevin.vanzonneveld.net
+  // +   original by: Alex
+  // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+  // +    revised by: Matt Bradley
+  // +   bugfixed by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+  // +   improved by: WebDevHobo (http://webdevhobo.blogspot.com/)
+  // +   improved by: Rafał Kukawski (http://blog.kukawski.pl)
+  // %        note 1: 1.0 is simplified to 1 before it can be accessed by the function, this makes
+  // %        note 1: it different from the PHP implementation. We can't fix this unfortunately.
+  // *     example 1: is_int(23)
+  // *     returns 1: true
+  // *     example 2: is_int('23')
+  // *     returns 2: false
+  // *     example 3: is_int(23.5)
+  // *     returns 3: false
+  // *     example 4: is_int(true)
+  // *     returns 4: false
+
+  return mixed_var === +mixed_var && isFinite(mixed_var) && !(mixed_var % 1);
+}
