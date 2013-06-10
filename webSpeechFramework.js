@@ -122,7 +122,7 @@ WebSpeechFramework.prototype.start = function() {
 		// Call specified function
 		if(typeof this.parent.config.onstart !== "undefined" || this.parent.config.onstart !== null) {
 			if(window[this.parent.config.onstart]) {
-				this.parent.config[onstart](event);
+				window[this.parent.config.onstart](event);
 			}
 		}
 		this.parent.isRecording = true;
@@ -132,7 +132,7 @@ WebSpeechFramework.prototype.start = function() {
 		// Call specified function
 		if(typeof this.parent.config.onresult !== "undefined" || this.parent.config.onresult !== null) {
 			if(window[this.parent.config.onresult]) {
-				this.parent.config[onresult](event);
+				window[this.parent.config.onresult](event);
 			}
 		}
 		var transcript = "";
@@ -150,7 +150,7 @@ WebSpeechFramework.prototype.start = function() {
 		// Call specified function
 		if(typeof this.parent.config.onerror !== "undefined" || this.parent.config.onerror !== null) {
 			if(window[this.parent.config.onerror]) {
-				this.parent.config[onerror](event);
+				window[this.parent.config.onerror](event);
 			}
 		}
 		var error = event.error;
@@ -166,7 +166,7 @@ WebSpeechFramework.prototype.start = function() {
 		// Call specified function
 		if(typeof this.parent.config.onend !== "undefined" || this.parent.config.onend !== null) {
 			if(window[this.parent.config.onend]) {
-				this.parent.config[onend](event);
+				window[this.parent.config.onend](event);
 			}
 		}
 		if(this.parent.config.displayConsoleLog) console.log("Speech Recognition stopped")

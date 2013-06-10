@@ -1,7 +1,11 @@
-﻿webSpeechFramework
+webSpeechFramework
 ==================
 
 A small framework to help developers to work with the Web Speech API.
+
+Version: 0.51
+
+Last update: 10. June 2013
 
 What it does
 ==================
